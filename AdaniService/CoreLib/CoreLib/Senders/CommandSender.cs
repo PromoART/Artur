@@ -1,17 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Security.Cryptography;
 using System.Text;
-using System.Threading.Tasks;
-using CoreLib.Commands;
 using CoreLib.Encryption;
-using CoreLib.Entity;
-using CoreLib.Serialization;
-using Microsoft.SqlServer.Server;
 
 namespace CoreLib.Senders {
    public class CommandSender : ISender {
@@ -33,11 +25,13 @@ namespace CoreLib.Senders {
          _BroadCastAddress = new IPEndPoint(broadcastAddress, targetPort);
          _RemoteUdpEndPoint = new IPEndPoint(broadcastAddress, targetPort);
       }
+
       //посылка широковещательной зашифрованной команды
       public void SendBroadcastCommand(string command) {
          byte[] bytes = Encrypter.EncryptData(command);
          _UdpClient.Send(bytes, bytes.Length, _BroadCastAddress);
       }
+
       //посылка зашифрованной команды по Tcp
       public void SendTcpCommand(string command) {
          var tcpClient = new TcpClient();
@@ -51,6 +45,7 @@ namespace CoreLib.Senders {
          }
          tcpClient.Close();
       }
+
       //Получение данных от сервера.
       public byte[] ReceiveData() {
          var tcpListner = new TcpListener(_LocalTcpEp);

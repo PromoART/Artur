@@ -1,9 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using CoreLib.Encryption;
 
 namespace CoreLib.Entity {
@@ -19,17 +16,17 @@ namespace CoreLib.Entity {
       }
 
       public bool AddUser(User user) {
-         //TODO незабыть потом снова включить проверку
-         //var existUser = _Context.Users.FirstOrDefault(usr => usr.Login == user.Login);
-         //if(existUser != null) {
-         //   return false;
-         //}
+         //TODO незабыть потом снова включить проверку на существвоание такого же пользователя
+         var existUser = _Context.Users.FirstOrDefault(usr => usr.Login == user.Login);
+         if (existUser != null) {
+            return false;
+         }
          _Context.Users.Add(user);
          return true;
       }
 
       public User GetUserByCredentials(string login, string password) {
-         return _Context.Users.FirstOrDefault(user => user.Login == login && user.Password == password);
+         return _Context.Users.FirstOrDefault(user => user.Login == login && user.PasswordHash == password);
       }
 
       public User GetUserById(int id) {
@@ -48,7 +45,7 @@ namespace CoreLib.Entity {
             Id = user.Id,
             AccessLevel = user.AccessLevel,
             Login = user.Login,
-            Password = user.Password,
+            PasswordHash = user.PasswordHash,
             Name = user.Name
          };
          return proxy;
@@ -99,7 +96,7 @@ namespace CoreLib.Entity {
 
       public bool RemoveDevice(int id) {
          var device = _Context.Devices.FirstOrDefault(dvc => dvc.Id == id);
-         if (device == null) {
+         if(device == null) {
             return false;
          }
          _Context.Devices.Remove(device);

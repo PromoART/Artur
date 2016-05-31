@@ -1,19 +1,11 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using System.Net;
-using System.Reflection.Emit;
 using System.Text;
-using System.Threading.Tasks;
 using System.Xml;
-using CoreLib;
-using CoreLib.Commands;
 using CoreLib.Commands.Common;
 using CoreLib.Commands.User;
 using CoreLib.Encryption;
 using CoreLib.Entity;
-using CoreLib.Helpers;
 using CoreLib.Listeners;
 using CoreLib.Serialization;
 
@@ -64,7 +56,7 @@ namespace AuthorizationServer.Listeners {
             var command = XmlSerializer<UserCommand>.Deserialize(xmlCommand);
             string sessionKey;
             using(var provider = new EntityProvider()) {
-               User user = provider.GetUserByCredentials(command.Login, command.Password);
+               User user = provider.GetUserByCredentials(command.Login, command.PasswordHash);
                if(user != null) {
                   sessionKey = provider.CreateSessionKey(user);
                }
@@ -83,7 +75,7 @@ namespace AuthorizationServer.Listeners {
          try {
             var command = XmlSerializer<ServiceCommand>.Deserialize(xmlCommand);
             string xmlUserInfo;
-            using (var provider = new EntityProvider()) {
+            using(var provider = new EntityProvider()) {
                User user = provider.GetUserByKey(command.SessionKey);
                if(user == null) {
                   throw new Exception("No exist user");
@@ -91,7 +83,8 @@ namespace AuthorizationServer.Listeners {
                xmlUserInfo = XmlSerializer<User>.SerializeToXmlString(user);
             }
             SendResponse(xmlUserInfo);
-         } catch (Exception ex) {
+         }
+         catch(Exception ex) {
             SendResponse($"{ex.Message} in {nameof(GetUser)}");
          }
       }
@@ -107,7 +100,7 @@ namespace AuthorizationServer.Listeners {
                //если сделать так user = command.User; то изменения в базу незапушутся
                user.AccessLevel = command.User.AccessLevel;
                user.Login = command.User.Login;
-               user.Password = command.User.Password;
+               user.PasswordHash = command.User.PasswordHash;
                user.Name = command.User.Name;
             }
             SendResponse("ok");
